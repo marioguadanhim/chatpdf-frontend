@@ -3,7 +3,6 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Commands
-
 ```bash
 npm run dev        # Start Vite dev server (default: http://localhost:5173)
 npm run build      # Production build
@@ -41,3 +40,27 @@ No global state library. Component-local `useState` for everything except notifi
 ### Environment
 
 Backend URL configured via `VITE_API_BASE_URL` in `.env` (default: `http://localhost:7551`). All Vite env vars must be prefixed with `VITE_`.
+
+## Backend API
+
+REST API running at `http://localhost:7551`. Swagger UI available at `http://localhost:7551/swagger/index.html`. Always HTTP — never HTTPS.
+
+### Auth endpoints
+- `POST /api/Auth/login` — body: `{ username, password }` → returns `{ accessToken, refreshToken, expiresAt }`
+- `POST /api/Auth/refresh` — body: `{ refreshToken }` → returns `{ accessToken, refreshToken, expiresAt }`
+
+### Response contracts
+- All tokens are strings. `expiresAt` is a .NET `DateTime` serialized as ISO 8601.
+- JSON is camelCase (default .NET serialization). Frontend guards for both camelCase and PascalCase.
+- Errors follow ASP.NET `ProblemDetails` shape: `{ title, status }`. Validation errors use `ValidationProblemDetails`: `{ errors: { field: [messages] } }`.
+
+## Code conventions
+
+- **No TypeScript** — plain JavaScript only. Do not add `.ts` or `.tsx` files.
+- **No test files** — no test runner is configured, do not generate test files.
+- **MUI only** — use Material-UI components for all UI. Do not introduce other UI libraries.
+- **HTTP only** — never use HTTPS for local API calls. The backend does not support it.
+- **Error handling** — all errors must go through `showError()` from `useToast()`. Never use `alert()` or `console.error()` as the sole error output.
+- **Auth flow** — never bypass `ProtectedRoute`. Any new page that requires authentication must be wrapped with it in `App.jsx`.
+- **Service layer** — all API calls must live in `src/services/`. Pages and components must never call `apiClient` directly.
+- **English only** — all UI text, comments, variable names, and labels must be in English.
