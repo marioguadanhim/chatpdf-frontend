@@ -20,6 +20,7 @@ function Chat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
   const messagesEndRef = useRef(null);
   const username = getUsername();
 
@@ -29,6 +30,7 @@ function Chat() {
 
   const handleLogout = () => {
     logout();
+    setSessionId(null);
     navigate('/login');
   };
 
@@ -41,13 +43,14 @@ function Chat() {
     setInput('');
     setLoading(true);
 
-    const result = await sendMessage(trimmed);
+    const result = await sendMessage(trimmed, sessionId);
     setLoading(false);
 
     if (result.success) {
+      setSessionId(result.data.sessionId);
       const apiMessage = {
         role: 'assistant',
-        content: result.data.reply || result.data.message || result.data.response || JSON.stringify(result.data),
+        content: result.data.reply,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, apiMessage]);
